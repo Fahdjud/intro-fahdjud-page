@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+  <title>Fahdjud Terminal</title>
+</head>
+<body>
+  <!-- Hero Section with Autoplay Video -->
+  <section class="hero-section">
+    <!-- Video placeholder until user interaction -->
+    <div id="video-placeholder">
+      <div id="play-button">▶</div>
+    </div>
+    
+    <div class="hero-video">
+      <div id="youtube-container"></div>
+    </div>
+    
+    <button id="unmute-button" class="unmute-button active">
+      <span class="muted">🔇 Unmute</span>
+      <span class="unmuted">🔊 Mute</span>
+    </button>
+    
+    <div class="hero-overlay">
+      <div class="ascii-art">
+  ______      _         _    _           _ 
+ |  ____|    | |       | |  (_)         | |
+ | |__ __ _  | |__   __| |  _ _   _   __| |
+ |  __/ _` | | '_ \ / _` | | | | | | / _` |
+ | | | (_| | | | | | (_| | | | |_| || (_| |
+ |_|  \__,_| |_| |_|\__,_| |_|\__,_(_)__,_|
+      </div>
+    </div>
+    <div class="scroll-indicator">▼ Scroll Down ▼</div>
+  </section>
+
+  <!-- Terminal Content Section -->
+  <div class="scanlines"></div>
+  <section class="terminal crt">
+    <div class="content-container">
+      <div class="typed-text" id="typed-text"></div>
+      <span class="cursor"></span>
+    </div>
+    
+    <div class="footer">
+      © Fahdjud <span id="current-year"></span> | All rights reserved
+    </div>
+  </section>
+
+  <!-- Load YouTube API -->
+  <script src="https://www.youtube.com/iframe_api"></script>
+  
+  <script>
+    // YouTube Player
+    let player;
+    
+    // Initialize YouTube player when API is ready
+    function onYouTubeIframeAPIReady() {
+      // Don't create player yet - wait for user interaction
+    }
+    
+    // Create YouTube player with sound
+    function createPlayer() {
+      player = new YT.Player('youtube-container', {
+        height: '100%',
+        width: '100%',
+        videoId: 'w89XJthwDhY',
+        playerVars: {
+          'autoplay': 1,
+          'mute': 0,
+          'controls': 0,
+          'showinfo': 0,
+          'rel': 0,
+          'iv_load_policy': 3,
+          'loop': 1,
+          'playlist': 'w89XJthwDhY',
+          'playsinline': 1,
+          'modestbranding': 1,
+          'fs': 0
+        },
+        events: {
+          'onReady': onPlayerReady,
+          'onStateChange': onPlayerStateChange
+        }
+      });
+    }
+    
+    // When player is ready
+    function onPlayerReady(event) {
+      // Try to unmute and play (may be blocked by browser)
+      event.target.unMute();
+      event.target.playVideo();
+      
+      // Update button state
+      document.getElementById('unmute-button').classList.add('active');
+    }
+    
+    // Monitor player state changes
+    function onPlayerStateChange(event) {
+      if (event.data === YT.PlayerState.ENDED) {
+        player.playVideo(); // Ensure looping
+      }
+    }
+    
+    // Handle play button click - creates YouTube player on user interaction
+    document.getElementById('video-placeholder').addEventListener('click', function() {
+      // Create YouTube player when user clicks
+      createPlayer();
+      
+      // Hide placeholder after a small delay to ensure smooth transition
+      setTimeout(() => {
+        document.getElementById('video-placeholder').style.display = 'none';
+      }, 200);
+    });
+    
+    // Terminal animations
+    const lines = [
+      "\n >> Initializing system...",
+      "\n >> Loading Fahdjud core modules...",
+      "\n >> Establishing secure connection...",
+      "\n",
+      "\n :: FAHDJUD TERMINAL READY ::",
+      "\n<button><a href='https://fahdjud.com'>ACCESS FAHDJUD</a></button>"
+    ];
+
+    const typedTextElement = document.getElementById('typed-text');
+    let currentText = '';
+    let lineIndex = 0;
+    let charIndex = 0;
+
+    function typeText() {
+      if (lineIndex < lines.length) {
+        if (charIndex < lines[lineIndex].length) {
+          currentText += lines[lineIndex].charAt(charIndex);
+          typedTextElement.innerHTML = currentText;
+          charIndex++;
+          
+          // Random typing speed for more realistic effect
+          const speed = Math.random() * 40 + 25;
+          setTimeout(typeText, speed);
+        } else {
+          lineIndex++;
+          charIndex = 0;
+          
+          // Pause between lines
+          setTimeout(typeText, 600);
+        }
+      }
+    }
+
+    // Add occasional screen flicker
+    function addFlicker() {
+      const terminal = document.querySelector('.terminal');
+      terminal.classList.add('flicker');
+      setTimeout(() => {
+        terminal.classList.remove('flicker');
+      }, 100);
+      
+      // Random timing for next flicker
+      const nextFlicker = Math.random() * 5000 + 2000;
+      setTimeout(addFlicker, nextFlicker);
+    }
+
+    // Start typing animation when terminal section comes into view
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          setTimeout(() => {
+            typeText();
+            addFlicker();
+          }, 500);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.2 });
+
+    observer.observe(document.querySelector('.terminal'));
+    
+    // Unmute button functionality - updated to work with YouTube API
+    document.getElementById('unmute-button').addEventListener('click', function() {
+      const button = this;
+      
+      if (player && player.getPlayerState) {
+        // Toggle mute state
+        if (button.classList.contains('active')) {
+          player.mute();
+          button.classList.remove('active');
+        } else {
+          player.unMute();
+          button.classList.add('active');
+        }
+      }
+    });
+    
+    // Try autoplay with sound using a fallback approach
+    // Note: This likely won't work due to browser autoplay policies,
+    // which is why we have the play button overlay
+    window.addEventListener('load', function() {
+      // Show visual cue for users to click to play with sound
+      const placeholder = document.getElementById('video-placeholder');
+      placeholder.style.display = 'flex'; // Ensure it's visible
+      
+      // Optional: Try automatic play after a delay, but this will likely be blocked
+      setTimeout(() => {
+        // This attempt to auto-start will likely fail due to browser policies
+        // That's why we keep the play button visible
+        document.getElementById('play-button').innerText = "▶";
+      }, 1000);
+      
+      // Set current year in footer
+      document.getElementById('current-year').textContent = new Date().getFullYear();
+    });
+  </script>
+</body>
+</html>
