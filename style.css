@@ -275,6 +275,10 @@ html, body {
       .typed-text {
         font-size: 16px;
       }
+
+      .hero-overlay {
+        background-color: rgba(0, 0, 0, 0);
+      }
     }
     /* From Uiverse.io by adamgiebl */ 
       button {
