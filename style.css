@@ -277,7 +277,7 @@ html, body {
       }
 
       .hero-overlay {
-        background-color: none !important;
+        background-color: rgba(0, 0, 0, 0);
       }
     }
     /* From Uiverse.io by adamgiebl */ 
